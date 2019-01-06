@@ -167,5 +167,22 @@ namespace master
                 return ("");
             }
         }
+
+        public String getImg(String nameFile)
+        {
+            try
+            {
+                StreamReader reader = new StreamReader(directory + nameFile);
+                String allFile = reader.ReadToEnd();
+
+                reader.Close();
+                return (allFile);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return ("");
+            }
+        }
     }
 }

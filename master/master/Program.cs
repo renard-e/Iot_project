@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.IO.Ports;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +14,13 @@ namespace master
     {
         Db dbAllUser = new Db();
         SendgridApi API = new SendgridApi();
+        String GoodBye;
+        String Welcome;
+        String Alarm;
+        String WrongId;
+        String Disabled;
+        String Intrusion;
+        Boolean AlarmIdx = false;
 
         private Boolean checkDigit(String str)
         {
@@ -25,11 +35,11 @@ namespace master
         private void proccessToAdd()
         {
             Console.WriteLine("--------------- Add User ---------------");
-            Console.Write("Id user (ex : 1234) : ");
+            Console.Write("Id user (ex : 123) : ");
             String id = Console.ReadLine();
             Console.Write("Name user (ex : tasoeur) : ");
             String name = Console.ReadLine();
-            if (String.IsNullOrEmpty(name) || String.IsNullOrEmpty(id) || name.Contains(";") || checkDigit(id))
+            if (String.IsNullOrEmpty(name) || String.IsNullOrEmpty(id) || name.Contains(";") || checkDigit(id) || id == "1234")
                 Console.WriteLine("Error : Invalid Name or Id.");
             else
             {
@@ -70,7 +80,7 @@ namespace master
         {
             while (true)
             {
-                Console.Write("Welcome to 42sh : tape \"add\" to add a new user or \"remove\" to remove an existing user or \"get\" to get all users infos : ");
+                Console.WriteLine("Welcome to 42sh : tape \"add\" to add a new user or \"remove\" to remove an existing user or \"get\" to get all users infos : ");
                 String cmd = Console.ReadLine();
                 if (String.IsNullOrEmpty(cmd) || (cmd != "add" && cmd != "remove" && cmd != "get"))
                     Console.WriteLine("Error : Invalid input");
@@ -83,16 +93,81 @@ namespace master
             }
         }
 
+        private void loadText()
+        {
+            Welcome = dbAllUser.getImg("welcome.txt");
+            Alarm = dbAllUser.getImg("alarmReady.txt");
+            GoodBye = dbAllUser.getImg("goodBye.txt");
+            WrongId = dbAllUser.getImg("wrongId.txt");
+            Disabled = dbAllUser.getImg("disabled.txt");
+            Intrusion = dbAllUser.getImg("intrusion.txt");
+        }
+
         public void run()
         {
             Thread goTo42sh = new Thread(new ThreadStart(this.tek42sh));
+            loadText();
+            SerialPort port = new SerialPort("COM3", 9600);
+            port.Open();
 
             goTo42sh.Start();
+            Console.Clear();
             while (true)
             {
-                //need just de read la sortie et d'envoyer le nom a API
-                API.sendEmail(dbAllUser.getUser("17"));
-                Thread.Sleep(30000);
+                Console.ForegroundColor = ConsoleColor.Red;
+                String line = port.ReadLine();
+                if (line != "1234" && line != "goodbye" && AlarmIdx == true)
+                {
+                    Console.WriteLine(Intrusion);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                    API.sendEmailAlert();
+                }
+                else if (line == "goodbye")
+                {
+                    Console.WriteLine(GoodBye);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                }
+                else
+                {
+                    if (line == "1234")
+                    {
+                        if (AlarmIdx == false)
+                        {
+                            Console.WriteLine(Alarm);
+                            Thread.Sleep(3000);
+                            Console.ResetColor();
+                            Console.Clear();
+                            AlarmIdx = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine(Disabled);
+                            Thread.Sleep(3000);
+                            Console.ResetColor();
+                            Console.Clear();
+                            AlarmIdx = false;
+                        }
+                    }
+                    else if (dbAllUser.getUser(line) != "")
+                    {
+                        Console.WriteLine(Welcome);
+                        Thread.Sleep(3000);
+                        Console.ResetColor();
+                        Console.Clear();
+                        API.sendEmail(dbAllUser.getUser(line));
+                    }
+                    else
+                    {
+                        Console.WriteLine(WrongId);
+                        Thread.Sleep(3000);
+                        Console.ResetColor();
+                        Console.Clear();
+                    }
+                }
             }
         }
 
@@ -100,6 +175,7 @@ namespace master
         {
             Program mainMaster = new Program();
 
+            Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
             mainMaster.run();
         }
     }
