@@ -48,13 +48,16 @@ void setup() {
 }
 
 void writeArduinoOn7Segment() {
- lc.setDigit(0, 3, 9, false);
+ lc.setChar(0, 3, 'A', false);
 } 
+
 void loop()
 {
   int rangeCpt1 = getPulseDistanceInMM(trigPinFirst, echoPinFirst);
   int rangeCpt2 = getPulseDistanceInMM(trigPinSecond, echoPinSecond);
-  if (rangeCpt1 > 0 && rangeCpt1 < 230)
+
+  writeArduinoOn7Segment();
+  if (rangeCpt1 > 0 && rangeCpt1 < 150)
   {
     int timeStart = millis() / 1000;
     char key = NO_KEY;
@@ -63,6 +66,9 @@ void loop()
       key = keypad.getKey();
       if (key != NO_KEY && key != '#')
       {
+        Serial.print("key=");
+        Serial.print(key);
+        Serial.print("\n");
         if (key == '*')
           id = "";
         else
@@ -75,7 +81,7 @@ void loop()
     Serial.print(id);
     Serial.print("\n");
   }
-  else if (rangeCpt2 > 0 && rangeCpt2 < 230)
+  else if (rangeCpt2 > 0 && rangeCpt2 < 150)
   {
     int timeStart = millis() / 1000;
     char key = NO_KEY;
@@ -84,6 +90,9 @@ void loop()
       key = keypad.getKey();
       if (key != NO_KEY && key != '#')
       {
+        Serial.print("key=");
+        Serial.print(key);
+        Serial.print("\n");
         if (key == '*')
           id = "";
         else

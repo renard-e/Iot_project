@@ -75,7 +75,7 @@ namespace master
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine("ERROR GET NAME USER = " + ex.ToString());
                 return ("");
             }
         }

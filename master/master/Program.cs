@@ -20,6 +20,7 @@ namespace master
         String WrongId;
         String Disabled;
         String Intrusion;
+        Dictionary<String, String> mapKey = new Dictionary<String, String>();
         Boolean AlarmIdx = false;
 
         private Boolean checkDigit(String str)
@@ -81,6 +82,7 @@ namespace master
             while (true)
             {
                 Console.WriteLine("Welcome to 42sh : tape \"add\" to add a new user or \"remove\" to remove an existing user or \"get\" to get all users infos : ");
+                Console.Clear();
                 String cmd = Console.ReadLine();
                 if (String.IsNullOrEmpty(cmd) || (cmd != "add" && cmd != "remove" && cmd != "get"))
                     Console.WriteLine("Error : Invalid input");
@@ -101,6 +103,84 @@ namespace master
             WrongId = dbAllUser.getImg("wrongId.txt");
             Disabled = dbAllUser.getImg("disabled.txt");
             Intrusion = dbAllUser.getImg("intrusion.txt");
+            mapKey["*"] = dbAllUser.getImg("reset.txt");
+            mapKey["0"] = dbAllUser.getImg("0.txt");
+            mapKey["1"] = dbAllUser.getImg("1.txt");
+            mapKey["2"] = dbAllUser.getImg("2.txt");
+            mapKey["3"] = dbAllUser.getImg("3.txt");
+            mapKey["4"] = dbAllUser.getImg("4.txt");
+            mapKey["5"] = dbAllUser.getImg("5.txt");
+            mapKey["6"] = dbAllUser.getImg("6.txt");
+            mapKey["7"] = dbAllUser.getImg("7.txt");
+            mapKey["8"] = dbAllUser.getImg("8.txt");
+            mapKey["9"] = dbAllUser.getImg("9.txt");
+        }
+
+        private void otherChoice(String line)
+        {
+            if (line != "1234" && line != "goodbye" && AlarmIdx == true)
+            {
+                Console.WriteLine(Intrusion);
+                Thread.Sleep(3000);
+                Console.ResetColor();
+                Console.Clear();
+                API.sendEmailAlert();
+            }
+            else if (line == "goodbye")
+            {
+                Console.WriteLine(GoodBye);
+                Thread.Sleep(3000);
+                Console.ResetColor();
+                Console.Clear();
+            }
+            else
+            {
+                if (line == "1234")
+                {
+                    if (AlarmIdx == false)
+                    {
+                        Console.WriteLine(Alarm);
+                        Thread.Sleep(3000);
+                        Console.ResetColor();
+                        Console.Clear();
+                        AlarmIdx = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine(Disabled);
+                        Thread.Sleep(3000);
+                        Console.ResetColor();
+                        Console.Clear();
+                        AlarmIdx = false;
+                    }
+                }
+                else if (dbAllUser.getUser(line) != "")
+                {
+                    Console.WriteLine(Welcome);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                    API.sendEmail(dbAllUser.getUser(line));
+                }
+                else
+                {
+                    Console.WriteLine(WrongId);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                }
+            }
+        }
+
+        public void printKey(String key)
+        {
+            if (key != "#")
+            {
+                Console.WriteLine(mapKey[key]);
+                Thread.Sleep(1000);
+                Console.ResetColor();
+                Console.Clear();
+            }
         }
 
         public void run()
@@ -116,58 +196,10 @@ namespace master
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 String line = port.ReadLine();
-                if (line != "1234" && line != "goodbye" && AlarmIdx == true)
-                {
-                    Console.WriteLine(Intrusion);
-                    Thread.Sleep(3000);
-                    Console.ResetColor();
-                    Console.Clear();
-                    API.sendEmailAlert();
-                }
-                else if (line == "goodbye")
-                {
-                    Console.WriteLine(GoodBye);
-                    Thread.Sleep(3000);
-                    Console.ResetColor();
-                    Console.Clear();
-                }
+                if (line.Contains("key=") == true)
+                    printKey(line.Split('=')[1]);
                 else
-                {
-                    if (line == "1234")
-                    {
-                        if (AlarmIdx == false)
-                        {
-                            Console.WriteLine(Alarm);
-                            Thread.Sleep(3000);
-                            Console.ResetColor();
-                            Console.Clear();
-                            AlarmIdx = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine(Disabled);
-                            Thread.Sleep(3000);
-                            Console.ResetColor();
-                            Console.Clear();
-                            AlarmIdx = false;
-                        }
-                    }
-                    else if (dbAllUser.getUser(line) != "")
-                    {
-                        Console.WriteLine(Welcome);
-                        Thread.Sleep(3000);
-                        Console.ResetColor();
-                        Console.Clear();
-                        API.sendEmail(dbAllUser.getUser(line));
-                    }
-                    else
-                    {
-                        Console.WriteLine(WrongId);
-                        Thread.Sleep(3000);
-                        Console.ResetColor();
-                        Console.Clear();
-                    }
-                }
+                    this.otherChoice(line);
             }
         }
 
