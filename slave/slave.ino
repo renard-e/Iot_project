@@ -78,6 +78,7 @@ void loop()
     }
     if (key != '#')
       id = "";
+    Serial.print("coming=");
     Serial.print(id);
     Serial.print("\n");
   }
@@ -100,12 +101,10 @@ void loop()
         timeStart = millis() / 1000;
       }
     }
-    if (key == '#')
-    {
-      Serial.print(id);
-      Serial.print("\n");
-    }
-    Serial.print("goodbye");
+    if (key != '#')
+      id = "";
+    Serial.print("exit=");
+    Serial.print(id);
     Serial.print("\n");
   }
   id = "";

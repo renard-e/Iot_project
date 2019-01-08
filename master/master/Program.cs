@@ -116,51 +116,68 @@ namespace master
             mapKey["9"] = dbAllUser.getImg("9.txt");
         }
 
-        private void otherChoice(String line)
+        public void printKey(String key)
         {
-            if (line != "1234" && line != "goodbye" && AlarmIdx == true)
+            if (key != "#")
             {
-                Console.WriteLine(Intrusion);
-                Thread.Sleep(3000);
-                Console.ResetColor();
-                Console.Clear();
-                API.sendEmailAlert();
-            }
-            else if (line == "goodbye")
-            {
-                Console.WriteLine(GoodBye);
-                Thread.Sleep(3000);
+                Console.WriteLine(mapKey[key]);
+                Thread.Sleep(1000);
                 Console.ResetColor();
                 Console.Clear();
             }
-            else
+        }
+
+        private void comingProccess(String line)
+        {
+            String idComing;
+
+            if (line.Split('=').Length >= 2)
             {
-                if (line == "1234")
+                idComing = line.Split('=')[1];
+                if (AlarmIdx == true && idComing != "1234")
                 {
-                    if (AlarmIdx == false)
-                    {
-                        Console.WriteLine(Alarm);
-                        Thread.Sleep(3000);
-                        Console.ResetColor();
-                        Console.Clear();
-                        AlarmIdx = true;
-                    }
-                    else
-                    {
-                        Console.WriteLine(Disabled);
-                        Thread.Sleep(3000);
-                        Console.ResetColor();
-                        Console.Clear();
-                        AlarmIdx = false;
-                    }
-                }
-                else if (dbAllUser.getUser(line) != "")
-                {
-                    Console.WriteLine(Welcome);
+                    Console.WriteLine(Intrusion);
                     Thread.Sleep(3000);
                     Console.ResetColor();
                     Console.Clear();
-                    API.sendEmail(dbAllUser.getUser(line));
+                    API.sendEmailAlert();
+                }
+                else if (AlarmIdx == true && idComing == "1234")
+                {
+                    Console.WriteLine(Disabled);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                    AlarmIdx = false;
+                }
+                else if (AlarmIdx == false)
+                {
+                    if (dbAllUser.getUser(idComing) != "")
+                    {
+                        Console.WriteLine(Welcome);
+                        Thread.Sleep(3000);
+                        Console.ResetColor();
+                        Console.Clear();
+                        API.sendEmail(dbAllUser.getUser(idComing));
+                    }
+                    else
+                    {
+                        Console.WriteLine(WrongId);
+                        Thread.Sleep(3000);
+                        Console.ResetColor();
+                        Console.Clear();
+                    }
+                }
+            }
+            else
+            {
+                if (AlarmIdx == true)
+                {
+                    Console.WriteLine(Intrusion);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                    API.sendEmailAlert();
                 }
                 else
                 {
@@ -172,14 +189,68 @@ namespace master
             }
         }
 
-        public void printKey(String key)
+        private void exitProccess(String line)
         {
-            if (key != "#")
+            String idExit;
+
+            if (line.Split('=').Length >= 2)
             {
-                Console.WriteLine(mapKey[key]);
-                Thread.Sleep(1000);
-                Console.ResetColor();
-                Console.Clear();
+                idExit = line.Split('=')[1];
+                if (AlarmIdx == false && idExit == "1234")
+                {
+                    Console.WriteLine(Alarm);
+                    Thread.Sleep(3000);
+                    Console.Clear();
+                    AlarmIdx = true;
+                    Console.WriteLine(GoodBye);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                }
+                else if (AlarmIdx == false && idExit != "1234")
+                {
+                    if (dbAllUser.getUser(idExit) != "")
+                    {
+                        Console.WriteLine(GoodBye);
+                        Thread.Sleep(3000);
+                        Console.ResetColor();
+                        Console.Clear();
+                        API.sendEmailExit(dbAllUser.getUser(idExit));
+                    }
+                    else
+                    {
+                        Console.WriteLine(WrongId);
+                        Thread.Sleep(3000);
+                        Console.ResetColor();
+                        Console.Clear();
+                    }
+                }
+                else if (AlarmIdx == true)
+                {
+                    Console.WriteLine(Intrusion);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                    API.sendEmailAlert();
+                }
+            }
+            else
+            {
+                if (AlarmIdx == false)
+                {
+                    Console.WriteLine(WrongId);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                }
+                else if (AlarmIdx == true)
+                {
+                    Console.WriteLine(Intrusion);
+                    Thread.Sleep(3000);
+                    Console.ResetColor();
+                    Console.Clear();
+                    API.sendEmailAlert();
+                }
             }
         }
 
@@ -198,8 +269,10 @@ namespace master
                 String line = port.ReadLine();
                 if (line.Contains("key=") == true)
                     printKey(line.Split('=')[1]);
-                else
-                    this.otherChoice(line);
+                else if (line.Contains("coming=") == true)
+                    comingProccess(line);
+                else if (line.Contains("exit=") == true)
+                    exitProccess(line);
             }
         }
 
